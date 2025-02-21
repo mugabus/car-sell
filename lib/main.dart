@@ -20,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
   String selectedCategory = 'All';
 
   void updateCategory(String category) {
@@ -28,6 +29,18 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  final List<Widget> _screens = [
+    HomeContent(),
+    CardScreen(),
+    ProfileScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,59 +48,58 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Car Marketplace'),
         backgroundColor: Colors.blueAccent,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search cars...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ),
-          CategorySection(
-            selectedCategory: selectedCategory,
-            onCategorySelected: updateCategory,
-          ),
-          Expanded(
-            child: CarList(selectedCategory: selectedCategory),
-          ),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Card'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blueAccent,
+        onTap: _onItemTapped,
       ),
     );
   }
 }
 
-class CategorySection extends StatelessWidget {
-  final List<String> categories = ['All', 'New', 'Used', 'SUV', 'Sedan', 'Truck'];
-  final String selectedCategory;
-  final Function(String) onCategorySelected;
-
-  CategorySection({required this.selectedCategory, required this.onCategorySelected});
-
+class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => onCategorySelected(categories[index]),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Chip(
-                label: Text(categories[index]),
-                backgroundColor: categories[index] == selectedCategory ? Colors.blueAccent : Colors.grey.shade200,
-                labelStyle: TextStyle(color: categories[index] == selectedCategory ? Colors.white : Colors.black),
-              ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search cars...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-          );
-        },
-      ),
+          ),
+        ),
+        Expanded(
+          child: CarList(selectedCategory: 'All'),
+        ),
+      ],
+    );
+  }
+}
+
+class CardScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Card Screen'),
+    );
+  }
+}
+
+class ProfileScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Profile Screen'),
     );
   }
 }
@@ -121,10 +133,77 @@ class CarList extends StatelessWidget {
             title: Text(car['name']!),
             subtitle: Text(car['price']!),
             trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CarDetailScreen(car: car),
+                ),
+              );
+            },
           ),
         );
       },
+    );
+  }
+}
+
+class CarDetailScreen extends StatelessWidget {
+  final Map<String, String> car;
+
+  CarDetailScreen({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(car['name']!),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Image.asset(car['image']!),
+            ),
+            SizedBox(height: 20),
+            Text(
+              car['name']!,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Text(
+              car['price']!,
+              style: TextStyle(fontSize: 20, color: Colors.green),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Category: ${car['category']!}',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 30),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Car purchased successfully!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Text('Buy Now'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  textStyle: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
