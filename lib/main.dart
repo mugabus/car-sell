@@ -22,10 +22,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String selectedCategory = 'All';
+  String sortBy = 'Price: Low to High';
+  List<Map<String, String>> cart = [];
 
-  void updateCategory(String category) {
+  void addToCart(Map<String, String> car) {
     setState(() {
-      selectedCategory = category;
+      cart.add(car);
     });
   }
 
@@ -35,11 +37,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  final List<Widget> _screens = [
-    HomeContent(),
-    CardScreen(),
-    ProfileScreen(),
-  ];
+  final List<Widget> _screens = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _screens.addAll([
+      HomeContent(addToCart: addToCart),
+      CartScreen(cart: cart),
+      ProfileScreen(),
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Card'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: _selectedIndex,
@@ -64,33 +72,42 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomeContent extends StatelessWidget {
+  final Function(Map<String, String>) addToCart;
+
+  HomeContent({required this.addToCart});
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search cars...',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-        ),
-        Expanded(
-          child: CarList(selectedCategory: 'All'),
-        ),
-      ],
+    return Expanded(
+      child: CarList(addToCart: addToCart),
     );
   }
 }
 
-class CardScreen extends StatelessWidget {
+class CartScreen extends StatelessWidget {
+  final List<Map<String, String>> cart;
+
+  CartScreen({required this.cart});
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Card Screen'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cart'),
+      ),
+      body: cart.isEmpty
+          ? Center(child: Text('Your cart is empty'))
+          : ListView.builder(
+        itemCount: cart.length,
+        itemBuilder: (context, index) {
+          final car = cart[index];
+          return ListTile(
+            leading: Image.asset(car['image']!),
+            title: Text(car['name']!),
+            subtitle: Text(car['price']!),
+          );
+        },
+      ),
     );
   }
 }
@@ -98,112 +115,54 @@ class CardScreen extends StatelessWidget {
 class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile Screen'),
+    return ListView(
+        children: [
+          Image.asset("assets/me.png"),
+          SizedBox(height: 20,),
+          Center(
+            child: Text("User Name"),
+          )
+        ],
     );
   }
 }
 
 class CarList extends StatelessWidget {
-  final String selectedCategory;
+  final Function(Map<String, String>) addToCart;
   final List<Map<String, String>> cars = [
-    {'name': 'Tesla Model S', 'price': '\$50,000', 'image': 'assets/noa.jpeg', 'category': 'New'},
-    {'name': 'BMW X5', 'price': '\$40,000', 'image': 'assets/tx.jpeg', 'category': 'SUV'},
-    {'name': 'Toyota Camry', 'price': '\$25,000', 'image': 'assets/vaguard.jpeg', 'category': 'Sedan'},
-    {'name': 'Ford F-150', 'price': '\$35,000', 'image': 'assets/vanette.jpeg', 'category': 'Truck'},
-    {'name': 'Honda Civic', 'price': '\$20,000', 'image': 'assets/noa.jpeg', 'category': 'Used'},
+    {'name': 'Tesla Model S', 'price': '50000', 'image': 'assets/noa.jpeg'},
+    {'name': 'BMW X5', 'price': '40000', 'image': 'assets/tx.jpeg'},
+    {'name': 'Toyota Camry', 'price': '25000', 'image': 'assets/vanette.jpeg'},
+    {'name': 'Ford F-150', 'price': '35000', 'image': 'assets/vaguard.jpeg'},
+    {'name': 'Honda Civic', 'price': '20000', 'image': 'assets/noa.jpeg'},
   ];
 
-  CarList({required this.selectedCategory});
+  CarList({required this.addToCart});
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, String>> filteredCars = selectedCategory == 'All'
-        ? cars
-        : cars.where((car) => car['category'] == selectedCategory).toList();
-
     return ListView.builder(
-      itemCount: filteredCars.length,
+      itemCount: cars.length,
       itemBuilder: (context, index) {
-        final car = filteredCars[index];
+        final car = cars[index];
         return Card(
           margin: EdgeInsets.all(10),
           child: ListTile(
             leading: Image.asset(car['image']!),
             title: Text(car['name']!),
-            subtitle: Text(car['price']!),
-            trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CarDetailScreen(car: car),
-                ),
-              );
-            },
+            subtitle: Text('\$' + car['price']!),
+            trailing: ElevatedButton(
+              onPressed: () {
+                addToCart(car);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${car['name']} added to cart!')),
+                );
+              },
+              child: Text('Buy'),
+            ),
           ),
         );
       },
-    );
-  }
-}
-
-class CarDetailScreen extends StatelessWidget {
-  final Map<String, String> car;
-
-  CarDetailScreen({required this.car});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(car['name']!),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Image.asset(car['image']!),
-            ),
-            SizedBox(height: 20),
-            Text(
-              car['name']!,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              car['price']!,
-              style: TextStyle(fontSize: 20, color: Colors.green),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Category: ${car['category']!}',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Car purchased successfully!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-                child: Text('Buy Now'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
