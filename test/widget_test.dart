@@ -28,4 +28,8 @@ void main() {
     expect(find.text('1'), findsOneWidget);
   });
 }
-
+{'name': 'Tesla Model S', 'price': '\$50,000', 'image': 'assets/noa.jpeg', 'category': 'New'},
+{'name': 'BMW X5', 'price': '\$40,000', 'image': 'assets/tx.jpeg', 'category': 'SUV'},
+{'name': 'Toyota Camry', 'price': '\$25,000', 'image': 'assets/vaguard.jpeg', 'category': 'Sedan'},
+{'name': 'Ford F-150', 'price': '\$35,000', 'image': 'assets/vanette.jpeg', 'category': 'Truck'},
+{'name': 'Honda Civic', 'price': '\$20,000', 'image': 'assets/noa.jpeg', 'category': 'Used'},
