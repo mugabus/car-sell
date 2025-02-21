@@ -21,8 +21,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  String selectedCategory = 'All';
-  String sortBy = 'Price: Low to High';
   List<Map<String, String>> cart = [];
 
   void addToCart(Map<String, String> car) {
@@ -53,7 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Car Marketplace'),
+        title: Center(
+          child: Text("Car marketplace"),
+        ),
         backgroundColor: Colors.blueAccent,
       ),
       body: _screens[_selectedIndex],
@@ -78,9 +78,7 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: CarList(addToCart: addToCart),
-    );
+    return CarList(addToCart: addToCart);
   }
 }
 
@@ -115,14 +113,11 @@ class CartScreen extends StatelessWidget {
 class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ListView(
-        children: [
-          Image.asset("assets/me.png"),
-          SizedBox(height: 20,),
-          Center(
-            child: Text("User Name"),
-          )
-        ],
+    return Center(
+      child: CircleAvatar(
+        radius: 50,
+        backgroundImage: AssetImage("assets/me.png"),
+      ),
     );
   }
 }
@@ -130,11 +125,11 @@ class ProfileScreen extends StatelessWidget {
 class CarList extends StatelessWidget {
   final Function(Map<String, String>) addToCart;
   final List<Map<String, String>> cars = [
-    {'name': 'Tesla Model S', 'price': '50000', 'image': 'assets/noa.jpeg'},
-    {'name': 'BMW X5', 'price': '40000', 'image': 'assets/tx.jpeg'},
-    {'name': 'Toyota Camry', 'price': '25000', 'image': 'assets/vanette.jpeg'},
-    {'name': 'Ford F-150', 'price': '35000', 'image': 'assets/vaguard.jpeg'},
-    {'name': 'Honda Civic', 'price': '20000', 'image': 'assets/noa.jpeg'},
+    {'name': 'Tesla Model S', 'price': '\$50,000', 'image': 'assets/noa.jpeg'},
+    {'name': 'BMW X5', 'price': '\$40,000', 'image': 'assets/tx.jpeg'},
+    {'name': 'Toyota Camry', 'price': '\$25,000', 'image': 'assets/vanette.jpeg'},
+    {'name': 'Ford F-150', 'price': '\$35,000', 'image': 'assets/vaguard.jpeg'},
+    {'name': 'Honda Civic', 'price': '\$20,000', 'image': 'assets/noa.jpeg'},
   ];
 
   CarList({required this.addToCart});
@@ -150,19 +145,56 @@ class CarList extends StatelessWidget {
           child: ListTile(
             leading: Image.asset(car['image']!),
             title: Text(car['name']!),
-            subtitle: Text('\$' + car['price']!),
-            trailing: ElevatedButton(
+            subtitle: Text(car['price']!),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CarDetailScreen(car: car, addToCart: addToCart),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class CarDetailScreen extends StatelessWidget {
+  final Map<String, String> car;
+  final Function(Map<String, String>) addToCart;
+
+  CarDetailScreen({required this.car, required this.addToCart});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(car['name']!)),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(car['image']!),
+            SizedBox(height: 20),
+            Text(car['name']!, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text(car['price']!, style: TextStyle(fontSize: 20, color: Colors.green)),
+            SizedBox(height: 20),
+            ElevatedButton(
               onPressed: () {
                 addToCart(car);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('${car['name']} added to cart!')),
                 );
+                Navigator.pop(context);
               },
-              child: Text('Buy'),
+              child: Text('Buy Now'),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }
