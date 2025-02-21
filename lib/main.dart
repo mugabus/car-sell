@@ -74,9 +74,9 @@ class CategorySection extends StatelessWidget {
 
 class CarList extends StatelessWidget {
   final List<Map<String, String>> cars = [
-    {'name': 'Tesla Model S', 'price': '\$50,000', 'image': 'https://via.placeholder.com/150'},
-    {'name': 'BMW X5', 'price': '\$40,000', 'image': 'https://via.placeholder.com/150'},
-    {'name': 'Toyota Camry', 'price': '\$25,000', 'image': 'https://via.placeholder.com/150'},
+    {'name': 'Tesla Model S', 'price': '\$50,000', 'image': 'assets/noa.jpeg'},
+    {'name': 'BMW X5', 'price': '\$40,000', 'image': 'assets/bmw_x5.png'},
+    {'name': 'Toyota Camry', 'price': '\$25,000', 'image': 'assets/toyota_camry.png'},
   ];
 
   @override
@@ -86,7 +86,7 @@ class CarList extends StatelessWidget {
         return Card(
           margin: EdgeInsets.all(10),
           child: ListTile(
-            leading: Image.network(car['image']!),
+            leading: Image.asset(car['image']!),
             title: Text(car['name']!),
             subtitle: Text(car['price']!),
             trailing: Icon(Icons.arrow_forward_ios),
