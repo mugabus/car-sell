@@ -114,11 +114,22 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: CircleAvatar(
-        radius: 50,
-        backgroundImage: AssetImage("assets/me.png"),
+      child: Column(
+        children: [
+          SizedBox(height: 20,),
+          CircleAvatar(
+            backgroundImage: AssetImage("me.png"),
+          ),
+          SizedBox(height: 20,),
+          Text("eddy"),
+          SizedBox(height: 20,),
+          Text("fatakimugaruka91@gmail.com"),
+          SizedBox(height: 40,),
+          Text("Historizes")
+        ],
       ),
     );
+
   }
 }
 
